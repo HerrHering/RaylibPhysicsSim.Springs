@@ -18,7 +18,7 @@ int main() {
     points.emplace_back(Vector2{ 0, -5 }, true);
 
     std::vector<Spring> springs;
-    springs.emplace_back(points[0], points[1], 3.0f, 0.5f);
+    springs.emplace_back(points[0], points[1], 0.0f, 1.0f);
 
     // Main game loop
     while (!WindowShouldClose()) {
@@ -45,9 +45,9 @@ int main() {
         } else {
             points[1].is_locked = true;
         }
-        // if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        //     points[1].is_locked = true;
-        // }
+        if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+            points[1].position = helper::screenToWorld(GetMousePosition());
+        }
 
 
         // Draw
