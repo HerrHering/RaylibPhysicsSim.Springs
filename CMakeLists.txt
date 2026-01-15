@@ -31,10 +31,12 @@ file(GLOB_RECURSE SOURCE_FILES "src/*.cpp" "include/*.hpp")
 
 # Define our executable target first
 add_executable(raylib_physicssim_project ${SOURCE_FILES})
+target_include_directories(raylib_physicssim_project PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
 # Create a custom target that copies the shaders.
 # The "ALL" keyword ensures this target is run as part of the default build.
 add_custom_target(copy_assets ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/assets"
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
             "${CMAKE_SOURCE_DIR}/assets"
             "${CMAKE_CURRENT_BINARY_DIR}/assets"
@@ -64,4 +66,4 @@ endif()
 target_link_libraries(raylib_physicssim_project PRIVATE raylib)
 
 # Include raylib headers for our target
-target_include_directories(raylib_physicssim_project PRIVATE ${raylib_SOURCE_DIR}/src)
+target_include_directories(raylib_physicssim_project SYSTEM PRIVATE ${raylib_SOURCE_DIR}/src)
