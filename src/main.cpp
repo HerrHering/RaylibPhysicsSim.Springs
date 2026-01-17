@@ -7,7 +7,7 @@
 
 int main() {
     InitWindow(screen_width(), screen_height(), "2D Spring Simulation");
-    const int targetFPS = static_cast<int>(1.0f / dt());
+    const int targetFPS = static_cast<int>(std::round(1.0f / dt()));
     SetTargetFPS(targetFPS);
 
     // Physics setup
@@ -18,7 +18,7 @@ int main() {
     points.emplace_back(Vector2{ 0, 0 }, true);
 
     std::vector<Spring> springs;
-    springs.emplace_back(points[0], points[1], 5.0f, 5.0f);
+    springs.emplace_back(points[0], points[1], 4.0f, 5.0f);
 
     // Main game loop
     while (!WindowShouldClose()) {
