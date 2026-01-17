@@ -2,6 +2,8 @@
 
 #include <raylib.h>
 
+struct Point;
+
 /// @brief Physics constant
 inline const float& dt() {
     static const float dt = 0.01f;
@@ -42,6 +44,14 @@ namespace helper
     inline Vector2 screenToWorld(Vector2 screen_pos) {
         return Vector2{(screen_pos.x - screen_width() * 0.5f) / PIXELS_PER_METER(), (screen_height() * 0.5f - screen_pos.y) / PIXELS_PER_METER()};
     }
+
+    void DrawArrow(Vector2 start, Vector2 end, float thickness, Color color);
+
+    /// @brief Draws velocity vectors and force vectors
+    /// @param point 
+    /// @param vel_scale 
+    /// @param force_scale 
+    void drawPointVectors(const Point& point, float vel_scale, float force_scale);
 } // namespace helper
 
 

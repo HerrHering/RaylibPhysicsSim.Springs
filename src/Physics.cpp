@@ -42,3 +42,34 @@ void Spring::applyConstraint() {
     p1.applyForce(force);
     p2.applyForce(Vector2Negate(force));
 }
+
+void helper::DrawArrow(Vector2 start, Vector2 end, float thickness, Color color) {
+    start = worldToScreen(start);
+    end = worldToScreen(end);
+
+    DrawLineEx(start, end, thickness, color);
+
+    // Don't draw arrowhead if the vector is zero length
+    if (Vector2Equals(start, end)) return;
+
+    Vector2 direction = Vector2Normalize(Vector2Subtract(end, start));
+    // Arrowhead perpendiculars
+    Vector2 p1 = Vector2Add(end, Vector2Rotate(Vector2Scale(direction, -10.0f), 45 * DEG2RAD));
+    Vector2 p2 = Vector2Add(end, Vector2Rotate(Vector2Scale(direction, -10.0f), -45 * DEG2RAD));
+
+    DrawLineV(end, p1, color);
+    DrawLineV(end, p2, color);
+}
+
+void helper::drawPointVectors(const Point &point, float vel_scale, float force_scale) {
+    if (point.is_locked) return;
+
+    // 1. Draw Velocity vector (derived from the change in position)
+    Vector2 velocity = Vector2Subtract(point.position, point.old_position);
+    Vector2 velocity_end_pos = Vector2Add(point.position, Vector2Scale(velocity, vel_scale / dt()));
+    DrawArrow(point.position, velocity_end_pos, 2.0f, GREEN);
+
+    // 2. Draw Acceleration vector
+    Vector2 force_end_pos = Vector2Add(point.position, Vector2Scale(point.total_force, force_scale));
+    DrawArrow(point.position, force_end_pos, 2.0f, YELLOW);
+}

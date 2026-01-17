@@ -14,11 +14,11 @@ int main() {
     float accumulator = 0.0f;
 
     std::vector<Point> points;
+    points.emplace_back(Vector2{ 0, 5 }, true);
     points.emplace_back(Vector2{ 0, 0 }, true);
-    points.emplace_back(Vector2{ 0, -5 }, true);
 
     std::vector<Spring> springs;
-    springs.emplace_back(points[0], points[1], 0.0f, 1.0f);
+    springs.emplace_back(points[0], points[1], 5.0f, 5.0f);
 
     // Main game loop
     while (!WindowShouldClose()) {
@@ -33,7 +33,8 @@ int main() {
 
             for (auto& point : points) {
                 // Add gravity
-                //point.applyForce(Vector2Scale(gravity(), point.mass));
+                point.applyForce(Vector2Scale(gravity(), point.mass));
+                helper::drawPointVectors(point, 0.2f, 0.2f);
                 point.update();
             }
             accumulator -= dt();
@@ -47,6 +48,7 @@ int main() {
         }
         if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
             points[1].position = helper::screenToWorld(GetMousePosition());
+            points[1].update();
         }
 
 
