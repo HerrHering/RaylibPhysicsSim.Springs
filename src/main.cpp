@@ -12,6 +12,7 @@ int main() {
 
     // Physics setup
     float accumulator = 0.0f;
+    float time_scale = 1.0f;
 
     std::vector<Point> points;
     points.emplace_back(Vector2{ 0, 5 }, true);
@@ -20,10 +21,13 @@ int main() {
     std::vector<Spring> springs;
     springs.emplace_back(points[0], points[1], 4.0f, 5.0f);
 
+    // Attach Tracker
+    helper::PointTracer tracer{points[1]};
+
     // Main game loop
     while (!WindowShouldClose()) {
         // Update
-        accumulator += GetFrameTime();
+        accumulator += GetFrameTime() * time_scale;
 
         while (accumulator >= dt()) {
             // Update physics with a fixed time step
@@ -49,7 +53,16 @@ int main() {
         if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
             points[1].position = helper::screenToWorld(GetMousePosition());
             points[1].update();
+
+            // Clear tracer for point 1
+            tracer.reset();
         }
+        // Time scale
+        if (IsKeyDown(KEY_ONE)) time_scale = 1.0f;
+        else if (IsKeyDown(KEY_TWO)) time_scale = 2.0f;
+        else if (IsKeyDown(KEY_THREE)) time_scale = 3.0f;
+        else if (IsKeyDown(KEY_FOUR)) time_scale = 4.0f;
+        else if (IsKeyDown(KEY_FIVE)) time_scale = 5.0f;
 
 
         // Draw
@@ -60,7 +73,7 @@ int main() {
         {
             int currentFPS = GetFPS();
             char fpsText[32];
-            sprintf(fpsText, "%d / %d FPS", currentFPS, targetFPS);
+            sprintf(fpsText, "%d / %d FPS x%d", currentFPS, targetFPS, static_cast<int>(time_scale));
             // Draw the FPS text at the top-left corner.
             DrawText(fpsText, 10, 30, 20, LIME);
         }
@@ -72,6 +85,9 @@ int main() {
         for (const auto& point : points) {
             point.draw();
         }
+
+        // Draw tracer
+        tracer.draw();
 
         DrawText("Click and drag the blue point", 10, 10, 20, LIGHTGRAY);
 

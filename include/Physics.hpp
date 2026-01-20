@@ -2,6 +2,8 @@
 
 #include <raylib.h>
 
+#include <deque>
+
 struct Point;
 
 /// @brief Physics constant
@@ -52,6 +54,24 @@ namespace helper
     /// @param vel_scale 
     /// @param force_scale 
     void drawPointVectors(const Point& point, float vel_scale, float force_scale);
+
+    struct PointTracer {
+        const Point& point;
+        size_t max_history_len;
+        bool permanent;
+        std::deque<Vector2> history;
+
+        PointTracer(const Point& target, float len_seconds)
+            : point(target), max_history_len(static_cast<size_t>(len_seconds / dt())), permanent(false), history{} {
+        }
+
+        PointTracer(const Point& target)
+            : point(target), max_history_len(0), permanent(true), history{} {
+        }
+        
+        void reset();
+        void draw();
+    };
 } // namespace helper
 
 
