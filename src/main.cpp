@@ -27,7 +27,8 @@ int main() {
     // Main game loop
     while (!WindowShouldClose()) {
         // Update
-        accumulator += GetFrameTime() * time_scale;
+        const float delta_time = GetFrameTime();
+        accumulator += delta_time * time_scale;
 
         while (accumulator >= dt()) {
             // Update physics with a fixed time step
@@ -42,6 +43,9 @@ int main() {
                 point.update();
             }
             accumulator -= dt();
+
+            // Update tracer(s)
+            tracer.update();
         }
 
         // Handle user input
@@ -59,10 +63,8 @@ int main() {
         }
         // Time scale
         if (IsKeyDown(KEY_ONE)) time_scale = 1.0f;
-        else if (IsKeyDown(KEY_TWO)) time_scale = 2.0f;
-        else if (IsKeyDown(KEY_THREE)) time_scale = 3.0f;
-        else if (IsKeyDown(KEY_FOUR)) time_scale = 4.0f;
-        else if (IsKeyDown(KEY_FIVE)) time_scale = 5.0f;
+        else if (IsKeyDown(KEY_TWO)) time_scale += 10.0f * delta_time;
+        else if (IsKeyDown(KEY_THREE)) time_scale -= 10.0f * delta_time;
 
 
         // Draw
@@ -73,7 +75,7 @@ int main() {
         {
             int currentFPS = GetFPS();
             char fpsText[32];
-            sprintf(fpsText, "%d / %d FPS x%d", currentFPS, targetFPS, static_cast<int>(time_scale));
+            sprintf(fpsText, "%d / %d FPS x%.1f", currentFPS, targetFPS, time_scale);
             // Draw the FPS text at the top-left corner.
             DrawText(fpsText, 10, 30, 20, LIME);
         }
@@ -86,7 +88,7 @@ int main() {
             point.draw();
         }
 
-        // Draw tracer
+        // Draw (accumulated) tracer
         tracer.draw();
 
         DrawText("Click and drag the blue point", 10, 10, 20, LIGHTGRAY);

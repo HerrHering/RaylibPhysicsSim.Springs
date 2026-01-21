@@ -78,15 +78,18 @@ void helper::PointTracer::reset() {
     history.clear();
 }
 
-void helper::PointTracer::draw()
-{
+void helper::PointTracer::update() {
     // Cycle points
     history.push_back(point.position);
     if (!permanent && history.size() > max_history_len) {
         history.pop_front();
     }
+}
 
-    for (size_t i = 0; i < history.size() - 1; ++i) {
+void helper::PointTracer::draw()
+{
+    // Draw trail
+    for (int i = 0; i < (int)history.size() - 1; ++i) {
         // Fade the line's color based on its age to create a "tail" effect
         float alpha = permanent ? 1.0f : (float)i / (float)history.size();
         DrawLineV(helper::worldToScreen(history[i]), helper::worldToScreen(history[i + 1]), Fade(PURPLE, alpha));

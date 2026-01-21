@@ -70,6 +70,7 @@ namespace helper
         }
         
         void reset();
+        void update();
         void draw();
     };
 } // namespace helper
