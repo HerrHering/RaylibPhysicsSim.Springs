@@ -2,6 +2,8 @@
 
 #include <raymath.h>
 
+using namespace PhysicsConstants;
+
 void Point::applyForce(Vector2 force) {
     if (is_locked)
         return;
@@ -20,7 +22,7 @@ void Point::update() {
     // Use Verlet to find new position
     // p_next = 2*p_current - p_old + a_current*dt^2
     Vector2 acc = Vector2Scale(total_force, 1.0f / mass);
-    Vector2 p_next = Vector2Scale(position, 2.0f) - old_position + Vector2Scale(acc, dt() * dt());
+    Vector2 p_next = Vector2Scale(position, 2.0f) - old_position + Vector2Scale(acc, dt * dt);
 
     // Update positions
     old_position = position;
@@ -66,7 +68,7 @@ void helper::drawPointVectors(const Point &point, float vel_scale, float force_s
 
     // 1. Draw Velocity vector (derived from the change in position)
     Vector2 velocity = Vector2Subtract(point.position, point.old_position);
-    Vector2 velocity_end_pos = Vector2Add(point.position, Vector2Scale(velocity, vel_scale / dt()));
+    Vector2 velocity_end_pos = Vector2Add(point.position, Vector2Scale(velocity, vel_scale / dt));
     DrawArrow(point.position, velocity_end_pos, 2.0f, GREEN);
 
     // 2. Draw Acceleration vector
@@ -92,6 +94,6 @@ void helper::PointTracer::draw()
     for (int i = 0; i < (int)history.size() - 1; ++i) {
         // Fade the line's color based on its age to create a "tail" effect
         float alpha = permanent ? 1.0f : (float)i / (float)history.size();
-        DrawLineV(helper::worldToScreen(history[i]), helper::worldToScreen(history[i + 1]), Fade(PURPLE, alpha));
+        DrawLineV(helper::worldToScreen(history[i]), helper::worldToScreen(history[i + 1]), Fade(color, alpha));
     }
 }

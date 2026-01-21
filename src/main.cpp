@@ -4,10 +4,11 @@
 #include <vector>
 
 #include <raymath.h>
+#include <iostream>
 
 int main() {
-    InitWindow(screen_width(), screen_height(), "2D Spring Simulation");
-    const int targetFPS = static_cast<int>(std::round(1.0f / dt()));
+    InitWindow(PhysicsConstants::screen_width, PhysicsConstants::screen_height, "2D Spring Simulation");
+    const int targetFPS = static_cast<int>(std::round(1.0f / PhysicsConstants::dt));
     SetTargetFPS(targetFPS);
 
     // Physics setup
@@ -16,13 +17,22 @@ int main() {
 
     std::vector<Point> points;
     points.emplace_back(Vector2{ 0, 5 }, true);
-    points.emplace_back(Vector2{ 0, 0 }, true);
+    points.emplace_back(Vector2{ 0, 0 }, 1.0f);
+    points.emplace_back(Vector2{ 0, -5 }, 1.0f);
+
 
     std::vector<Spring> springs;
-    springs.emplace_back(points[0], points[1], 4.0f, 5.0f);
+    springs.emplace_back(points[0], points[1], 3.0f, 50.0f);
+    springs.emplace_back(points[1], points[2], 3.0f, 50.0f);
 
     // Attach Tracker
-    helper::PointTracer tracer{points[1]};
+    helper::PointTracer tracer1{points[1], PURPLE};
+    helper::PointTracer tracer2{points[2], BLUE};
+    helper::Tracermanager tracers;
+    //tracers.tracers.push_back(&tracer1);
+    tracers.tracers.push_back(&tracer2);
+
+    helper::UserInputManager input_manager{time_scale};
 
     // Main game loop
     while (!WindowShouldClose()) {
@@ -30,7 +40,7 @@ int main() {
         const float delta_time = GetFrameTime();
         accumulator += delta_time * time_scale;
 
-        while (accumulator >= dt()) {
+        while (accumulator >= PhysicsConstants::dt) {
             // Update physics with a fixed time step
             for (auto& spring : springs) {
                 spring.applyConstraint();
@@ -38,33 +48,33 @@ int main() {
 
             for (auto& point : points) {
                 // Add gravity
-                point.applyForce(Vector2Scale(gravity(), point.mass));
+                point.applyForce(Vector2Scale(PhysicsConstants::gravity, point.mass));
                 helper::drawPointVectors(point, 0.2f, 0.2f);
                 point.update();
             }
-            accumulator -= dt();
+            accumulator -= PhysicsConstants::dt;
 
             // Update tracer(s)
-            tracer.update();
+            tracers.update();
         }
 
         // Handle user input
+        input_manager.update();
+
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-            points[1].is_locked = false;
-        } else {
-            points[1].is_locked = true;
-        }
-        if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
             points[1].position = helper::screenToWorld(GetMousePosition());
             points[1].update();
 
-            // Clear tracer for point 1
-            tracer.reset();
+            // Clear tracer(s)
+            tracers.reset();
         }
-        // Time scale
-        if (IsKeyDown(KEY_ONE)) time_scale = 1.0f;
-        else if (IsKeyDown(KEY_TWO)) time_scale += 10.0f * delta_time;
-        else if (IsKeyDown(KEY_THREE)) time_scale -= 10.0f * delta_time;
+        else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+            points[2].position = helper::screenToWorld(GetMousePosition());
+            points[2].update();
+
+            // Clear tracer(s)
+            tracers.reset();
+        }
 
 
         // Draw
@@ -75,9 +85,20 @@ int main() {
         {
             int currentFPS = GetFPS();
             char fpsText[32];
-            sprintf(fpsText, "%d / %d FPS x%.1f", currentFPS, targetFPS, time_scale);
+            sprintf(fpsText, "%d / %d FPS", currentFPS, targetFPS);
             // Draw the FPS text at the top-left corner.
             DrawText(fpsText, 10, 30, 20, LIME);
+
+            if (input_manager.paused) {
+                char speedText[32];
+                sprintf(speedText, "SPEED: x%.1f", input_manager.paused_time);
+                DrawText(speedText, 10, 50, 20, RED);
+            }
+            else {
+                char speedText[32];
+                sprintf(speedText, "SPEED: x%.1f", input_manager.time_scale);
+                DrawText(speedText, 10, 50, 20, LIME);
+            }
         }
 
         for (const auto& spring : springs) {
@@ -89,7 +110,7 @@ int main() {
         }
 
         // Draw (accumulated) tracer
-        tracer.draw();
+        tracers.draw();
 
         DrawText("Click and drag the blue point", 10, 10, 20, LIGHTGRAY);
 

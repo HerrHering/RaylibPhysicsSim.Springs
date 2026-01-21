@@ -1,50 +1,29 @@
 #pragma once
 
+#include <Globals.hpp>
+
 #include <raylib.h>
 
 #include <deque>
+#include <vector>
 
 struct Point;
 
-/// @brief Physics constant
-inline const float& dt() {
-    static const float dt = 1.0f / 60.0f;
-    return dt;
-}
-
-inline const Vector2& gravity() {
-    static const Vector2 g{0.0f, -9.8f};
-    return g;
-}
-
-inline const int& screen_width() {
-    static const int screen_width = 800;
-    return screen_width;
-}
-inline const int& screen_height() {
-    static const int screen_height = 600;
-    return screen_height;
-}
-
-/// @brief Physics constant 
-inline const float& PIXELS_PER_METER() {
-    static const float ratio = 50.0f;
-    return ratio;
-}
-
 namespace helper
 {
+    using namespace PhysicsConstants;
+
     /// @brief Origin at center, right-up
     /// @param world_pos 
     /// @return 
     inline Vector2 worldToScreen(Vector2 world_pos) {
-        return Vector2{screen_width() * 0.5f + world_pos.x * PIXELS_PER_METER(), screen_height() * 0.5f - world_pos.y * PIXELS_PER_METER()};
+        return Vector2{screen_width * 0.5f + world_pos.x * PIXELS_PER_METER, screen_height * 0.5f - world_pos.y * PIXELS_PER_METER};
     }
     /// @brief Origin at top left, right-down
     /// @param screen_pos
     /// @return 
     inline Vector2 screenToWorld(Vector2 screen_pos) {
-        return Vector2{(screen_pos.x - screen_width() * 0.5f) / PIXELS_PER_METER(), (screen_height() * 0.5f - screen_pos.y) / PIXELS_PER_METER()};
+        return Vector2{(screen_pos.x - screen_width * 0.5f) / PIXELS_PER_METER, (screen_height * 0.5f - screen_pos.y) / PIXELS_PER_METER};
     }
 
     void DrawArrow(Vector2 start, Vector2 end, float thickness, Color color);
@@ -60,18 +39,90 @@ namespace helper
         size_t max_history_len;
         bool permanent;
         std::deque<Vector2> history;
+        Color color;
 
-        PointTracer(const Point& target, float len_seconds)
-            : point(target), max_history_len(static_cast<size_t>(len_seconds / dt())), permanent(false), history{} {
+        PointTracer(const Point& target, float len_seconds, Color color = PURPLE)
+            : point(target), max_history_len(static_cast<size_t>(len_seconds / dt)), permanent(false), history{}, color(color) {
         }
 
-        PointTracer(const Point& target)
-            : point(target), max_history_len(0), permanent(true), history{} {
+        PointTracer(const Point& target, Color color = PURPLE)
+            : point(target), max_history_len(0), permanent(true), history{}, color(color) {
         }
         
         void reset();
         void update();
         void draw();
+    };
+
+    struct Tracermanager {
+        std::vector<PointTracer*> tracers;
+        void update() {
+            for (auto tracer : tracers) {
+                tracer->update();
+            }
+        }
+        void reset() {
+            for (auto tracer : tracers) {
+                tracer->reset();
+            }
+        }
+        void draw() {
+            for (auto tracer : tracers) {
+                tracer->draw();
+            }
+        }
+    };
+
+    struct UserInputManager {
+        float& time_scale;
+        float paused_time;
+        bool paused;
+        UserInputManager(float& time_scale) : time_scale(time_scale), paused_time(time_scale), paused(true) {
+            time_scale = 0.0f;
+        }
+        void update() {
+            // Zoom
+            if (IsKeyPressed(KEY_M)) {
+                PIXELS_PER_METER *= 2.0f;
+            }
+            else if (IsKeyPressed(KEY_N)) {
+                PIXELS_PER_METER *= 0.5f;
+            }
+
+            // Speed control
+            if (!paused) {
+                if (IsKeyPressed(KEY_ONE)) time_scale = 1.0f;
+                else if (IsKeyPressed(KEY_TWO)) time_scale += 1.0f;
+                else if (IsKeyPressed(KEY_THREE)) {
+                    time_scale -= 1.0f;
+                    time_scale = std::max(time_scale, 1.0f);
+                }
+            }
+            else {
+                if (IsKeyPressed(KEY_ONE)) paused_time = 1.0f;
+                else if (IsKeyPressed(KEY_TWO)) paused_time += 1.0f;
+                else if (IsKeyPressed(KEY_THREE)) {
+                    paused_time -= 1.0f;
+                    paused_time = std::max(paused_time, 1.0f);
+                }
+            }
+
+            if (IsKeyPressed(KEY_SPACE)) {
+                // Pause
+                if (!paused) {
+                    paused_time = time_scale;
+                    time_scale = 0.0f;
+                    paused = true;
+                }
+                else {
+                    // Unpause
+                    time_scale = paused_time;
+                    paused = false;
+                }
+            }
+        }
+
+
     };
 } // namespace helper
 
