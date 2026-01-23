@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(raylib)
 # -----------------------------------------------------------------------------
 
 # Grab source files
-file(GLOB_RECURSE SOURCE_FILES "src/*.cpp" "include/*.hpp")
+file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
 # ---------------------------------------------
 # Set include path for headers
 #target_include_directories(raylib_physicssim_project PUBLIC include)

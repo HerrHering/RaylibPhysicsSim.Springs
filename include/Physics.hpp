@@ -17,13 +17,13 @@ namespace helper
     /// @param world_pos 
     /// @return 
     inline Vector2 worldToScreen(Vector2 world_pos) {
-        return Vector2{screen_width * 0.5f + world_pos.x * PIXELS_PER_METER, screen_height * 0.5f - world_pos.y * PIXELS_PER_METER};
+        return Vector2{sim_screen_width * 0.5f + world_pos.x * PIXELS_PER_METER, sim_screen_height * 0.5f - world_pos.y * PIXELS_PER_METER};
     }
     /// @brief Origin at top left, right-down
     /// @param screen_pos
     /// @return 
     inline Vector2 screenToWorld(Vector2 screen_pos) {
-        return Vector2{(screen_pos.x - screen_width * 0.5f) / PIXELS_PER_METER, (screen_height * 0.5f - screen_pos.y) / PIXELS_PER_METER};
+        return Vector2{(screen_pos.x - sim_screen_width * 0.5f) / PIXELS_PER_METER, (sim_screen_height * 0.5f - screen_pos.y) / PIXELS_PER_METER};
     }
 
     void DrawArrow(Vector2 start, Vector2 end, float thickness, Color color);

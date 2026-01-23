@@ -1,15 +1,21 @@
 #include <iostream>
 
 #include <Physics.hpp>
+#include <Plot.hpp>
 #include <vector>
 
 #include <raymath.h>
 #include <iostream>
 
 int main() {
-    InitWindow(PhysicsConstants::screen_width, PhysicsConstants::screen_height, "2D Spring Simulation");
+    const int graph_height = 150;
+    const int total_screen_height = PhysicsConstants::sim_screen_height + graph_height;
+    InitWindow(PhysicsConstants::sim_screen_width, total_screen_height, "2D Spring Simulation");
     const int targetFPS = static_cast<int>(std::round(1.0f / PhysicsConstants::dt));
     SetTargetFPS(targetFPS);
+
+    // Graph drawer
+    EnergyPlot plot{Rectangle{.x = 0, .y = PhysicsConstants::sim_screen_height, .width = PhysicsConstants::sim_screen_width, .height = graph_height}, 1000, RED};
 
     // Physics setup
     float accumulator = 0.0f;
@@ -18,12 +24,12 @@ int main() {
     std::vector<Point> points;
     points.emplace_back(Vector2{ 0, 5 }, true);
     points.emplace_back(Vector2{ 0, 0 }, 1.0f);
-    points.emplace_back(Vector2{ 0, -5 }, 1.0f);
+    //points.emplace_back(Vector2{ 0, -5 }, 1.0f);
 
 
     std::vector<Spring> springs;
-    springs.emplace_back(points[0], points[1], 3.0f, 50.0f);
-    springs.emplace_back(points[1], points[2], 3.0f, 50.0f);
+    springs.emplace_back(points[0], points[1], 0.0f, 5.0f);
+    //springs.emplace_back(points[1], points[2], 0.0f, 5.0f);
 
     // Attach Tracker
     helper::PointTracer tracer1{points[1], PURPLE};
@@ -101,6 +107,8 @@ int main() {
             }
         }
 
+        // We want to put a graph below the simulation window, and we dont want to overdraw it
+        BeginScissorMode(0, 0, PhysicsConstants::sim_screen_width, PhysicsConstants::sim_screen_height);
         for (const auto& spring : springs) {
             spring.draw();
         }
@@ -111,8 +119,15 @@ int main() {
 
         // Draw (accumulated) tracer
         tracers.draw();
+        EndScissorMode(); // End simulation window
 
         DrawText("Click and drag the blue point", 10, 10, 20, LIGHTGRAY);
+
+        // Draw graph
+        if (!input_manager.paused) {
+            plot.update(plot.calculateEnergy(points, springs));
+            plot.draw();
+        }
 
         EndDrawing();
     }
