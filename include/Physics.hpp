@@ -152,9 +152,7 @@ struct Point {
     /// @brief Updates the position of the Point, given the accumulated forces
     void update();
     /// @brief Draws a Point on the screen
-    void draw() const {
-        DrawCircleV(helper::worldToScreen(position), 10, is_locked ? RED : BLUE);
-    }
+    void draw() const;
 };
 
 /// @brief Creates a Spring constraint between two Points

@@ -38,6 +38,10 @@ void Point::update() {
     total_force = {0.0f, 0.0f};
 }
 
+void Point::draw() const {
+    DrawCircleV(helper::worldToScreen(position), 0.2f * PIXELS_PER_METER, is_locked ? RED : BLUE);
+}
+
 void Spring::applyConstraint() const {
     //  Calculate force from perspective of p1
 
