@@ -4,7 +4,13 @@
 
 using namespace PhysicsConstants;
 
-void Point::applyForce(Vector2 force) {
+Vector2 Point::getVel() const
+{
+    return Vector2Scale(position - old_position, 1.0f / dt);
+}
+
+void Point::applyForce(Vector2 force)
+{
     if (is_locked)
         return;
 
@@ -32,14 +38,18 @@ void Point::update() {
     total_force = {0.0f, 0.0f};
 }
 
-void Spring::applyConstraint() {
-    // p2 <- p1
-    Vector2 delta = Vector2Subtract(p2.position, p1.position);
+void Spring::applyConstraint() const {
+    //  Calculate force from perspective of p1
+
+    // p2 -> p1
+    Vector2 delta = Vector2Subtract(p1.position, p2.position);
     float distance = Vector2Length(delta);
     float stretch = distance - rest_length;
-    // Force for p1, for p2 it will be its counter force
-    Vector2 force_dir = Vector2Scale(delta, 1.0f / distance);
-    Vector2 force = Vector2Scale(force_dir, stretch * spring_constant);
+    Vector2 delta_dir = delta * (1.0f / distance);
+    Vector2 hook_force = Vector2Scale(delta_dir, -stretch * spring_constant); // -k*delta_x
+    Vector2 vel = p1.getVel() - p2.getVel();
+    Vector2 damp_force = vel * (-dampening);
+    Vector2 force = hook_force + damp_force;
 
     p1.applyForce(force);
     p2.applyForce(Vector2Negate(force));

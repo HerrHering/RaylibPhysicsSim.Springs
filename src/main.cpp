@@ -3,6 +3,7 @@
 #include <Physics.hpp>
 #include <Plot.hpp>
 #include <vector>
+#include <clothe.hpp>
 
 #include <raymath.h>
 #include <iostream>
@@ -17,26 +18,16 @@ int main() {
     // Graph drawer
     EnergyPlot plot{Rectangle{.x = 0, .y = PhysicsConstants::sim_screen_height, .width = PhysicsConstants::sim_screen_width, .height = graph_height}, 1000, RED};
 
+    // Clothe sim
+    Clothe clothe = Clothe::Create(10, 1.0f, 100.0f);
+    (void)clothe;
+
     // Physics setup
     float accumulator = 0.0f;
     float time_scale = 1.0f;
 
-    std::vector<Point> points;
-    points.emplace_back(Vector2{ 0, 5 }, true);
-    points.emplace_back(Vector2{ 0, 0 }, 1.0f);
-    //points.emplace_back(Vector2{ 0, -5 }, 1.0f);
-
-
-    std::vector<Spring> springs;
-    springs.emplace_back(points[0], points[1], 0.0f, 5.0f);
-    //springs.emplace_back(points[1], points[2], 0.0f, 5.0f);
-
     // Attach Tracker
-    helper::PointTracer tracer1{points[1], PURPLE};
-    helper::PointTracer tracer2{points[2], BLUE};
     helper::Tracermanager tracers;
-    //tracers.tracers.push_back(&tracer1);
-    tracers.tracers.push_back(&tracer2);
 
     helper::UserInputManager input_manager{time_scale};
 
@@ -48,16 +39,9 @@ int main() {
 
         while (accumulator >= PhysicsConstants::dt) {
             // Update physics with a fixed time step
-            for (auto& spring : springs) {
-                spring.applyConstraint();
-            }
+            
+            clothe.update();
 
-            for (auto& point : points) {
-                // Add gravity
-                point.applyForce(Vector2Scale(PhysicsConstants::gravity, point.mass));
-                helper::drawPointVectors(point, 0.2f, 0.2f);
-                point.update();
-            }
             accumulator -= PhysicsConstants::dt;
 
             // Update tracer(s)
@@ -67,20 +51,20 @@ int main() {
         // Handle user input
         input_manager.update();
 
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-            points[1].position = helper::screenToWorld(GetMousePosition());
-            points[1].update();
+        // if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+        //     points[1].position = helper::screenToWorld(GetMousePosition());
+        //     points[1].update();
 
-            // Clear tracer(s)
-            tracers.reset();
-        }
-        else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
-            points[2].position = helper::screenToWorld(GetMousePosition());
-            points[2].update();
+        //     // Clear tracer(s)
+        //     tracers.reset();
+        // }
+        // else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+        //     points[2].position = helper::screenToWorld(GetMousePosition());
+        //     points[2].update();
 
-            // Clear tracer(s)
-            tracers.reset();
-        }
+        //     // Clear tracer(s)
+        //     tracers.reset();
+        // }
 
 
         // Draw
@@ -109,13 +93,8 @@ int main() {
 
         // We want to put a graph below the simulation window, and we dont want to overdraw it
         BeginScissorMode(0, 0, PhysicsConstants::sim_screen_width, PhysicsConstants::sim_screen_height);
-        for (const auto& spring : springs) {
-            spring.draw();
-        }
-
-        for (const auto& point : points) {
-            point.draw();
-        }
+        
+        clothe.draw();
 
         // Draw (accumulated) tracer
         tracers.draw();
@@ -125,7 +104,7 @@ int main() {
 
         // Draw graph
         if (!input_manager.paused) {
-            plot.update(plot.calculateEnergy(points, springs));
+            plot.update(plot.calculateEnergy(clothe.points, clothe.springs));
             plot.draw();
         }
 

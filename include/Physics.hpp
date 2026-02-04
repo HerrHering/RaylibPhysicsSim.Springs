@@ -6,6 +6,7 @@
 
 #include <deque>
 #include <vector>
+#include <math.h>
 
 struct Point;
 
@@ -136,14 +137,16 @@ struct Point {
     
     /// @brief Initializes the point with zero initial velocity
     /// @param position The (starting) position of the Point
-    Point(Vector2 position, float mass = 1.0f)
-    : position(position), mass(mass), is_locked(false), old_position(position), total_force({0.0f, 0.0f}) {}
+    Point(Vector2 position, float mass = 1.0f, bool is_locked = false)
+    : position(position), mass(mass), is_locked(is_locked), old_position(position), total_force({0.0f, 0.0f}) {}
     /// @brief Initializes the point with zero initial velocity
     /// @param position The (starting) position of the Point
     /// @param is_locked Special parameter for making a point STATIC 
     Point(Vector2 position, bool is_locked = false)
     : position(position), mass(1.0f), is_locked(is_locked), old_position(position), total_force({0.0f, 0.0f}) {}
     
+    Vector2 getVel() const;
+
     /// @brief Applies force to the point
     void applyForce(Vector2 force);
     /// @brief Updates the position of the Point, given the accumulated forces
@@ -160,12 +163,26 @@ struct Spring {
     Point& p2;
     float rest_length;
     float spring_constant;
+    float dampening;
 
-    Spring(Point& p1, Point& p2, float rest_len, float spring_k)
-        : p1(p1), p2(p2), rest_length(rest_len), spring_constant(spring_k) {}
+    /// @brief 
+    /// @param p1 
+    /// @param p2 
+    /// @param rest_len 
+    /// @param spring_k 
+    /// @param dampening_per_cycle Decides what percentage of energy should be lost per cycle (between 0-1)
+    Spring(Point& p1, Point& p2, float rest_len, float spring_k, float dampening_per_cycle = 0.1f)
+        : p1(p1), p2(p2), rest_length(rest_len), spring_constant(spring_k), dampening(0.0f) {
+            // We convert the given dampening input to one that suits the diff-eq
+            float reduced_mass = p1.mass * p2.mass / (p1.mass + p2.mass);
+            float decay = -0.5f * std::log(1 - dampening_per_cycle);
+            // Zeta
+            float damping_ratio = decay / std::sqrt(4.0f*PI*PI + decay*decay);
+            dampening = 2.0f * damping_ratio * std::sqrt(spring_constant * reduced_mass);
+        }
 
     /// @brief Applies the spring forces to the points
-    void applyConstraint();
+    void applyConstraint() const;
     /// @brief Draws a Point on the screen
     void draw() const {
         DrawLineV(helper::worldToScreen(p1.position), helper::worldToScreen(p2.position), GRAY);
