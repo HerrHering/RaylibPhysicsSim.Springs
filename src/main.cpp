@@ -19,7 +19,7 @@ int main() {
     EnergyPlot plot{Rectangle{.x = 0, .y = PhysicsConstants::sim_screen_height, .width = PhysicsConstants::sim_screen_width, .height = graph_height}, 1000, RED};
 
     // Clothe sim
-    Clothe clothe = Clothe::Create(10, 1.0f, 100.0f);
+    Clothe clothe = Clothe::Create(20, 1.0f, 1000.0f);
     (void)clothe;
 
     // Physics setup

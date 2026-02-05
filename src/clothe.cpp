@@ -196,4 +196,9 @@ void helper::UserInputManager::update() {
     if (IsKeyPressed(KEY_S)) {
         clothe.stabilize();
     }
+    // Move camera
+    if (IsKeyDown(KEY_LEFT)) camera_offset.x -= 10.0f * dt;
+    if (IsKeyDown(KEY_RIGHT)) camera_offset.x += 10.0f * dt;
+    if (IsKeyDown(KEY_DOWN)) camera_offset.y -= 10.0f * dt;
+    if (IsKeyDown(KEY_UP)) camera_offset.y += 10.0f * dt;
 }

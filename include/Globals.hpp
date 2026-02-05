@@ -9,4 +9,5 @@ namespace PhysicsConstants
     inline const int sim_screen_width = 800;
     inline const int sim_screen_height = 600;
     inline float PIXELS_PER_METER = 50.0f;
+    inline Vector2 camera_offset;
 } // namespace constants
