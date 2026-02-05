@@ -1,6 +1,8 @@
 #include <Physics.hpp>
 
 #include <raymath.h>
+#include <limits>
+#include <iostream>
 
 using namespace PhysicsConstants;
 
@@ -88,6 +90,16 @@ void helper::drawPointVectors(const Point &point, float vel_scale, float force_s
     // 2. Draw Acceleration vector
     Vector2 force_end_pos = Vector2Add(point.position, Vector2Scale(point.total_force, force_scale));
     DrawArrow(point.position, force_end_pos, 2.0f, YELLOW);
+}
+
+float helper::calc_dampening(float m1, float m2, float k, float damp_per_cycle)
+{
+    // We convert the given dampening input to one that suits the diff-eq
+    float reduced_mass = m1 * m2 / (m1 + m2);
+    float decay = -0.5f * std::log(1 - damp_per_cycle);
+    // Zeta
+    float damping_ratio = decay / std::sqrt(4.0f*PI*PI + decay*decay);
+    return 2.0f * damping_ratio * std::sqrt(k * reduced_mass);
 }
 
 void helper::PointTracer::reset() {

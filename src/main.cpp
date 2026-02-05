@@ -29,7 +29,7 @@ int main() {
     // Attach Tracker
     helper::Tracermanager tracers;
 
-    helper::UserInputManager input_manager{time_scale};
+    helper::UserInputManager input_manager{time_scale, clothe};
 
     // Main game loop
     while (!WindowShouldClose()) {
@@ -40,6 +40,7 @@ int main() {
         while (accumulator >= PhysicsConstants::dt) {
             // Update physics with a fixed time step
             
+            clothe.applyForces();
             clothe.update();
 
             accumulator -= PhysicsConstants::dt;
@@ -50,22 +51,6 @@ int main() {
 
         // Handle user input
         input_manager.update();
-
-        // if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-        //     points[1].position = helper::screenToWorld(GetMousePosition());
-        //     points[1].update();
-
-        //     // Clear tracer(s)
-        //     tracers.reset();
-        // }
-        // else if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
-        //     points[2].position = helper::screenToWorld(GetMousePosition());
-        //     points[2].update();
-
-        //     // Clear tracer(s)
-        //     tracers.reset();
-        // }
-
 
         // Draw
         BeginDrawing();

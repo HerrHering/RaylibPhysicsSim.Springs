@@ -35,6 +35,8 @@ namespace helper
     /// @param force_scale 
     void drawPointVectors(const Point& point, float vel_scale, float force_scale);
 
+    float calc_dampening(float m1, float m2, float k, float damp_per_cycle);
+
     struct PointTracer {
         const Point& point;
         size_t max_history_len;
@@ -72,58 +74,6 @@ namespace helper
                 tracer->draw();
             }
         }
-    };
-
-    struct UserInputManager {
-        float& time_scale;
-        float paused_time;
-        bool paused;
-        UserInputManager(float& time_scale) : time_scale(time_scale), paused_time(time_scale), paused(true) {
-            time_scale = 0.0f;
-        }
-        void update() {
-            // Zoom
-            if (IsKeyPressed(KEY_M)) {
-                PIXELS_PER_METER *= 2.0f;
-            }
-            else if (IsKeyPressed(KEY_N)) {
-                PIXELS_PER_METER *= 0.5f;
-            }
-
-            // Speed control
-            if (!paused) {
-                if (IsKeyPressed(KEY_ONE)) time_scale = 1.0f;
-                else if (IsKeyPressed(KEY_TWO)) time_scale += 1.0f;
-                else if (IsKeyPressed(KEY_THREE)) {
-                    time_scale -= 1.0f;
-                    time_scale = std::max(time_scale, 1.0f);
-                }
-            }
-            else {
-                if (IsKeyPressed(KEY_ONE)) paused_time = 1.0f;
-                else if (IsKeyPressed(KEY_TWO)) paused_time += 1.0f;
-                else if (IsKeyPressed(KEY_THREE)) {
-                    paused_time -= 1.0f;
-                    paused_time = std::max(paused_time, 1.0f);
-                }
-            }
-
-            if (IsKeyPressed(KEY_SPACE)) {
-                // Pause
-                if (!paused) {
-                    paused_time = time_scale;
-                    time_scale = 0.0f;
-                    paused = true;
-                }
-                else {
-                    // Unpause
-                    time_scale = paused_time;
-                    paused = false;
-                }
-            }
-        }
-
-
     };
 } // namespace helper
 
@@ -171,12 +121,7 @@ struct Spring {
     /// @param dampening_per_cycle Decides what percentage of energy should be lost per cycle (between 0-1)
     Spring(Point& p1, Point& p2, float rest_len, float spring_k, float dampening_per_cycle = 0.1f)
         : p1(p1), p2(p2), rest_length(rest_len), spring_constant(spring_k), dampening(0.0f) {
-            // We convert the given dampening input to one that suits the diff-eq
-            float reduced_mass = p1.mass * p2.mass / (p1.mass + p2.mass);
-            float decay = -0.5f * std::log(1 - dampening_per_cycle);
-            // Zeta
-            float damping_ratio = decay / std::sqrt(4.0f*PI*PI + decay*decay);
-            dampening = 2.0f * damping_ratio * std::sqrt(spring_constant * reduced_mass);
+            dampening = helper::calc_dampening(p1.mass, p2.mass, spring_constant, dampening_per_cycle);
         }
 
     /// @brief Applies the spring forces to the points
