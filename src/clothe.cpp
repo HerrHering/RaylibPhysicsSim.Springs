@@ -90,7 +90,7 @@ void Clothe::stabilize() {
     // Original values
     float mass = springs[0].p1.mass;
     float original_damp = springs[0].dampening;
-    float strong_damp = helper::calc_dampening(mass, mass, springs[0].spring_constant, 0.99f);
+    float strong_damp = helper::calc_dampening(mass, mass, springs[0].spring_constant, 0.5f);
 
     // Set dampening to really high
     for (Spring& s : springs) {
